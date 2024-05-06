@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service on the Go | So'GO</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        body {
+            background-color: lightgoldenrodyellow;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+
+        .header {
+            margin-top: 20px;
+        }
+
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 50px;
+        }
+
+        .logo-container img {
+            height: 100px;
+                    }
+
+        .search-container {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .search-container input[type="text"] {
+            padding: 10px;
+            width: 300px;
+            border: none;
+            border-radius: 5px;
+            outline: none;
+            font-size: 16px;
+        }
+
+        .search-container button {
+            padding: 10px 20px;
+            background-color: burlywood;
+            border: none;
+            border-radius: 5px;
+            color: black;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .buttons {
+            margin-top: 20px;
+        }
+
+        .homepage-button {
+            padding: 10px 20px;
+            font-size: 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+            margin-right: 10px;
+            background-color: burlywood; 
+        }
+
+        .professionals-list {
+            margin-top: 50px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .professional {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px;
+            width: 200px;
+            cursor: pointer;
+        }
+
+        .professional:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .professional img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+        }
+
+        #calendar {
+            margin-top: 20px;
+            display: none;
+        }
+
+        #totalPrice {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .selected {
+            border-color: blue; 
+            box-shadow: 0 0 5px blue;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Service on the Go</h1>
+    </div>
+
+    <div class="logo">
+        <img src="logo.png" alt="So'GO Logo">
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Search...">
+        <button onclick="search()">Search</button>
+    </div>
+
+    <div class="buttons">
+        <button class="homepage-button" onclick="redirectToPage('home')">Home</button>
+        <button class="homepage-button" onclick="redirectToPage('about')">About</button>
+        <button class="homepage-button" onclick="redirectToPage('services')">Services</button>
+    </div>
+
+    <div class="professionals-list" id="professionalsList" style="display: none;">
+        <!-- Professional lists will be displayed here -->
+    </div>
+
+    <div id="calendar">
+        <input type="text" id="datePicker" placeholder="Select date range">
+        <input type="number" id="daysNeeded" placeholder="Enter days needed">
+        <button onclick="calculateTotal()">Calculate Total</button>
+        <div id="totalPrice"></div>
+    </div>
+
+    
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        var selectedProfessional = null;
+        var selectedDays = 0;
+
+        function toggleSection(sectionId) {
+            var section = document.getElementById(sectionId)
+            if (section.style.display === "none") {
+                section.style.display = "block";
+            }
+            else {
+                section.style.display = "none";
+            }
+        }
+
+        var professionals = {
+            general: [
+                { name: "John Doe", profession: "Handyman", pricePerDay: 150, image: "https://via.placeholder.com/150", contact: { email: "john@example.com", phone: "123-456-7890" } },
+                { name: "Jane Smith", profession: "Electrician", pricePerDay: 180, image: "https://via.placeholder.com/150", contact: { email: "jane@example.com", phone: "234-567-8901" } },
+                { name: "David Johnson", profession: "Plumber", pricePerDay: 160, image: "https://via.placeholder.com/150", contact: { email: "david@example.com", phone: "345-678-9012" } },
+                { name: "Sarah Wilson", profession: "Painter", pricePerDay: 170, image: "https://via.placeholder.com/150", contact: { email: "sarah@example.com", phone: "456-789-0123" } },
+                { name: "Michael Brown", profession: "Carpenter", pricePerDay: 190, image: "https://via.placeholder.com/150", contact: { email: "michael@example.com", phone: "567-890-1234" } },
+                { name: "Emily Garcia", profession: "Landscaper", pricePerDay: 200, image: "https://via.placeholder.com/150", contact: { email: "emily@example.com", phone: "678-901-2345" } },
+                { name: "Daniel Martinez", profession: "House Cleaner", pricePerDay: 130, image: "https://via.placeholder.com/150", contact: { email: "daniel@example.com", phone: "789-012-3456" } },
+                { name: "Olivia Taylor", profession: "Car Mechanic", pricePerDay: 180, image: "https://via.placeholder.com/150", contact: { email: "olivia@example.com", phone: "890-123-4567" } },
+                { name: "James Lee", profession: "Appliance Repair Technician", pricePerDay: 160, image: "https://via.placeholder.com/150", contact: { email: "james@example.com", phone: "901-234-5678" } },
+                { name: "Sophia Hernandez", profession: "Locksmith", pricePerDay: 150, image: "https://via.placeholder.com/150", contact: { email: "sophia@example.com", phone: "012-345-6789" } }
+            ],
+            personal: [
+                { name: "Alice Johnson", profession: "Personal Trainer", pricePerDay: 200, image: "https://via.placeholder.com/150", contact: { email: "alice@example.com", phone: "234-567-8901" } },
+                { name: "Bob Brown", profession: "Personal Chef", pricePerDay: 220, image: "https://via.placeholder.com/150", contact: { email: "bob@example.com", phone: "345-678-9012" } },
+                { name: "Ella Garcia", profession: "Mental Health Counselor", pricePerDay: 180, image: "https://via.placeholder.com/150", contact: { email: "ella@example.com", phone: "456-789-0123" } },
+                { name: "Ryan Wilson", profession: "Personal Stylist", pricePerDay: 170, image: "https://via.placeholder.com/150", contact: { email: "ryan@example.com", phone: "567-890-1234" } },
+                { name: "Sophia Lee", profession: "Life Coach", pricePerDay: 210, image: "https://via.placeholder.com/150", contact: { email: "sophia@example.com", phone: "678-901-2345" } },
+                { name: "Alexander Martinez", profession: "Pilates Instructor", pricePerDay: 130, image: "https://via.placeholder.com/150", contact: { email: "alexander@example.com", phone: "789-012-3456" } },
+                { name: "Emma Hernandez", profession: "Yoga Instructor", pricePerDay: 150, image: "https://via.placeholder.com/150", contact: { email: "emma@example.com", phone: "890-123-4567" } },
+                { name: "Christopher Perez", profession: "Massage Therapist", pricePerDay: 160, image: "https://via.placeholder.com/150", contact: { email: "christopher@example.com", phone: "901-234-5678" } },
+                { name: "Isabella Taylor", profession: "Nutritionist", pricePerDay: 180, image: "https://via.placeholder.com/150", contact: { email: "isabella@example.com", phone: "012-345-6789" } },
+                { name: "William Rodriguez", profession: "Personal Assistant", pricePerDay: 190, image: "https://via.placeholder.com/150", contact: { email: "william@example.com", phone: "123-456-7890" } }
+            ],
+            health: [
+                { name: "Dr. Michael Johnson", profession: "General Physician", pricePerDay: 250, image: "https://via.placeholder.com/150", contact: { email: "michael@example.com", phone: "234-567-8901" } },
+                { name: "Dr. Emily Brown", profession: "Dentist", pricePerDay: 300, image: "https://via.placeholder.com/150", contact: { email: "emily@example.com", phone: "345-678-9012" } },
+                { name: "Dr. Sophia Lee", profession: "Pediatrician", pricePerDay: 280, image: "https://via.placeholder.com/150", contact: { email: "sophia@example.com", phone: "456-789-0123" } },
+                { name: "Dr. William Martinez", profession: "Psychiatrist", pricePerDay: 350, image: "https://via.placeholder.com/150", contact: { email: "william@example.com", phone: "567-890-1234" } },
+                { name: "Dr. Olivia Garcia", profession: "Dermatologist", pricePerDay: 320, image: "https://via.placeholder.com/150", contact: { email: "olivia@example.com", phone: "678-901-2345" } },
+                { name: "Dr. James Hernandez", profession: "Orthopedic Surgeon", pricePerDay: 380, image: "https://via.placeholder.com/150", contact: { email: "james@example.com", phone: "789-012-3456" } },
+                { name: "Dr. Emma Wilson", profession: "Cardiologist", pricePerDay: 400, image: "https://via.placeholder.com/150", contact: { email: "emma@example.com", phone: "890-123-4567" } },
+                { name: "Dr. Alexander Brown", profession: "Ophthalmologist", pricePerDay: 300, image: "https://via.placeholder.com/150", contact: { email: "alexander@example.com", phone: "901-234-5678" } },
+                { name: "Dr. Christopher Taylor", profession: "Neurologist", pricePerDay: 380, image: "https://via.placeholder.com/150", contact: { email: "christopher@example.com", phone: "012-345-6789" } },
+                { name: "Dr. Isabella Perez", profession: "Gynecologist", pricePerDay: 350, image: "https://via.placeholder.com/150", contact: { email: "isabella@example.com", phone: "123-456-7890" } }
+            ]
+        };
+
+        function redirectToPage(page) {
+            window.location.href = page + ".html";
+        }
+
+        function showProfessionals(category) {
+            var professionalsList = document.getElementById("professionalsList");
+            professionalsList.innerHTML = "";
+
+            professionals[category].forEach(function(professional) {
+                var professionalElement = document.createElement("div");
+                professionalElement.classList.add("professional");
+
+                var imageElement = document.createElement("img");
+                imageElement.src = professional.image;
+
+                var nameElement = document.createElement("p");
+                nameElement.textContent = professional.name;
+
+                var professionElement = document.createElement("p");
+                professionElement.textContent = professional.profession;
+
+                var priceElement = document.createElement("p");
+                priceElement.textContent = "Price per Day: $" + professional.pricePerDay;
+
+                var contactElement = document.createElement("p");
+                contactElement.textContent = "Contact: " + professional.contact.email + ", " + professional.contact.phone;
+
+                professionalElement.appendChild(imageElement);
+                professionalElement.appendChild(nameElement);
+                professionalElement.appendChild(professionElement);
+                professionalElement.appendChild(priceElement);
+                professionalElement.appendChild(contactElement);
+
+                professionalElement.onclick = function() {
+                    var previouslySelected = document.querySelector(".professional.selected");
+                    if (previouslySelected) {
+                        previouslySelected.classList.remove("selected");
+                    }
+                    professionalElement.classList.add("selected");
+                    selectedProfessional = professional;
+                    document.getElementById("calendar").style.display = "block";
+                };
+
+                professionalsList.appendChild(professionalElement);
+            });
+
+            professionalsList.style.display = "flex";
+        }
+
+        function calculateTotal() {
+            var daysNeeded = parseInt(document.getElementById("daysNeeded").value);
+            if (isNaN(daysNeeded) || daysNeeded <= 0) {
+                alert("Please enter a valid number of days.");
+                return;
+            }
+
+            var totalPrice = daysNeeded * selectedProfessional.pricePerDay;
+            document.getElementById("totalPrice").innerHTML = "Total Price: $" + totalPrice;
+        }
+
+        function search() {
+            var searchInput = document.getElementById("searchInput").value.toLowerCase();
+            var matchedProfessionals = [];
+
+            for (var category in professionals) {
+                matchedProfessionals = matchedProfessionals.concat(professionals[category].filter(function(professional) {
+                    return professional.name.toLowerCase().includes(searchInput) || professional.profession.toLowerCase().includes(searchInput);
+                }));
+            }
+
+            var professionalsList = document.getElementById("professionalsList");
+            professionalsList.innerHTML = "";
+
+            matchedProfessionals.forEach(function(professional) {
+                var professionalElement = document.createElement("div");
+                professionalElement.classList.add("professional");
+
+                var imageElement = document.createElement("img");
+                imageElement.src = professional.image;
+
+                var nameElement = document.createElement("p");
+                nameElement.textContent = professional.name;
+
+                var professionElement = document.createElement("p");
+                professionElement.textContent = professional.profession;
+
+                var priceElement = document.createElement("p");
+                priceElement.textContent = "Price per Day: $" + professional.pricePerDay;
+
+                var contactElement = document.createElement("p");
+                contactElement.textContent = "Contact: " + professional.contact.email + ", " + professional.contact.phone;
+
+                professionalElement.appendChild(imageElement);
+                professionalElement.appendChild(nameElement);
+                professionalElement.appendChild(professionElement);
+                professionalElement.appendChild(priceElement);
+                professionalElement.appendChild(contactElement);
+
+                professionalElement.onclick = function() {
+                    var previouslySelected = document.querySelector(".professional.selected");
+                    if (previouslySelected) {
+                        previouslySelected.classList.remove("selected");
+                    }
+                    professionalElement.classList.add("selected");
+                    selectedProfessional = professional;
+                    document.getElementById("calendar").style.display = "block";
+                };
+
+                professionalsList.appendChild(professionalElement);
+            });
+
+            professionalsList.style.display = "flex";
+        }
+
+        flatpickr("#datePicker", {
+            mode: "range"
+        });
+    </script>
+
+    <footer>
+        <p>&copy; 2024 Service on the Go. All rights reserved.</p>
+    </footer>
+    
+</body>
+</html>
